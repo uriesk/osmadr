@@ -5,11 +5,10 @@
 
 int main(int argc, char* argv[])
 {
-  std::vector<OSMObject*> test;
-  Way testnode;
-  test.push_back(&testnode);
-  std::string buildings = printBuildingsInCommun("Unterweißenbach");
+  std::string adss = printAddressesInCommun("Unterweißenbach");
+  std::cout << adss << std::endl;
+  //std::string buildings = printBuildingsInCommun("Unterweißenbach");
   //std::cout << buildings << std::endl;
-  loadOSMData(buildings); 
-  return 1;
+  //OSMData test = buildings; 
+  return 0;
 }

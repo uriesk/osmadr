@@ -21,33 +21,51 @@ std::string printBuildingsInCommun(const char* name)
   return overpassRequest(OVERPASS_HOST, OVERPASS_URL, request);
 }
 
-/*
- * <sometag id=2342 long=asdf\>
- * a = str.find('<') + 1 bis b = str.find_first_of(" \><", a) - 1
- * if a = b -1 then fuck you
- * str.substr(a, b - a) = sometag... case nach tags und OSMObject erstellen
- * int = b;
- * while str[int] == ' ' searchTags in OSMObject (end when str.find_first_not_of(" \n\t") == str.find_first_of("\><"))
- * while str[b] != '\\' && str[b+1] != '>' and not str.fine("</" + sometag) then int+1 nochmal return = in die liste
- * return OSMObject
-*/
-
-
-int loadOSMData(std::string osm_data)
+OSMData::OSMData(std::string osm_data)
 {
-  std::cout << "Enter loadOSMData" << std::endl;
+  std::cout << "Construct OSMData" << std::endl;
   unsigned int strcnt;
-  std::vector<OSMObject*> osm_vector;
   strcnt = 0;
+
   while((strcnt = loadXMLElement(osm_data, osm_vector, strcnt, 0)));
+
+  for(std::vector<OSMObject*>::iterator iter=osm_vector.begin(); iter != osm_vector.end(); iter++)
+    (*iter)->refResolution(osm_vector);
 
   for(std::vector<OSMObject*>::iterator iter=osm_vector.begin(); iter != osm_vector.end(); iter++)
   {
     (*iter)->whatAreYou();
     (*iter)->printID();
   }
+}
 
-  return 1;
+OSMData::~OSMData()
+{
+  for(std::vector<OSMObject*>::iterator iter=osm_vector.begin(); iter != osm_vector.end(); iter++)
+    delete *iter;
+  osm_vector.clear();
+}
+
+void Relation::refResolution(std::vector<OSMObject*> osm_vector)
+{
+  members.clear();
+  std::vector<OSMObject*>::iterator itero;
+
+  for(std::vector<unsigned long long>::iterator iter=refs.begin(); iter != refs.end(); iter++)
+    for(itero=osm_vector.begin(); (*itero)->id == *iter; itero++);
+  
+  members.push_back(*itero);
+}
+
+void Way::refResolution(std::vector<OSMObject*> osm_vector)
+{
+  nodes.clear();
+  std::vector<OSMObject*>::iterator itero;
+
+  for(std::vector<unsigned long long>::iterator iter=refs.begin(); iter != refs.end(); iter++)
+    for(itero=osm_vector.begin(); (*itero)->id == *iter; itero++);
+  
+  nodes.push_back((Node*)(*itero));
 }
 
 unsigned int loadXMLElement(std::string osm_data, std::vector<OSMObject*> &osm_vector, unsigned int strcnt = 0, unsigned int level = 0)

@@ -5,7 +5,7 @@
 #define OVERPASS_HOST "overpass-api.de"
 #define OVERPASS_URL "/api/interpreter?data="
 
-#define OVERPASS_ADDRESS_REQUEST "[out:csv(\"addr:city\", \"addr:postcode\", \"addr:street\", \"addr:housenumber\")]; \
+#define OVERPASS_ADDRESS_REQUEST "[out:csv(\"addr:city\", \"addr:postcode\", \"addr:street\", \"addr:housenumber\";false ;\"|\")]; \
 ( area[name=\"" + name  + "\"][boundary=\"administrative\"]; )->.a; \
 ( \
   node \
@@ -51,13 +51,24 @@ typedef struct _Tag_
 class OSMObject
 {
   public:
+    virtual ~OSMObject(){};
+    std::vector<Tag*> tags;
     unsigned long long id;
     virtual void whatAreYou(){std::cout<<"OSMObject\n";}
     virtual int addRef(unsigned long long){return 1;}
     virtual int addType(std::string){return 1;}
     virtual int addRole(std::string){return 1;}
+    virtual void refResolution(std::vector<OSMObject*> osm_vector){};
     void printID(){std::cout<<id<<std::endl;}
-    std::vector<Tag*> tags;
+};
+
+class OSMData
+{
+  public:
+    OSMData(std::string xmldata);
+    ~OSMData();
+  private:
+    std::vector<OSMObject*> osm_vector;
 };
 
 class Node : public OSMObject
@@ -75,6 +86,7 @@ class Way : public OSMObject
   public:
     std::vector<unsigned long long> refs;
     std::vector<Node*> nodes;
+    void refResolution(std::vector<OSMObject*> osm_vector);
     void whatAreYou(){std::cout<<"Way\n";}
 
     int addRef(unsigned long long ref);
@@ -90,10 +102,12 @@ typedef struct _Member_
 class Relation : public OSMObject
 {
   public:
-    std::vector<Member> members;
+    //std::vector<Member> members;
+    std::vector<OSMObject*> members;
     std::vector<unsigned long long> refs;
     std::vector<std::string> types;
     std::vector<std::string> roles;
+    void refResolution(std::vector<OSMObject*> osm_vector);
     void whatAreYou(){std::cout<<"Relation\n";}
 
     int addRef(unsigned long long ref);
