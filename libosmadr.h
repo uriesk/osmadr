@@ -115,6 +115,25 @@ class Relation : public OSMObject
     int addRole(std::string role);
 };
 
-int loadOSMData(std::string);
+class Address
+{
+  public:
+    Address(std::string, std::string, std::string, std::string);
+    long double lat;
+    long double lon;
+  private:
+    std::string city;
+    std::string postcode;
+    std::string street;
+    std::string housenumber;
+};
+
+class AddressData
+{
+  public:
+    std::vector<Address> addresses;
+    AddressData(std::string csv_data);
+};
+
 unsigned int loadXMLElement(std::string osm_data, std::vector<OSMObject*>&, unsigned int, unsigned int);
 
