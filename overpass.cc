@@ -40,7 +40,7 @@ std::string overpassRequest(const char* overpass_host, const char* overpass_url,
   fprintf(stderr, "Query is:\n<<START>>\n%s<<END>>\n", get);
   
   //Send the query to the server
-  int sent = 0;
+  unsigned int sent = 0;
   while(sent < strlen(get))
   { 
     tmpres = send(sock, get+sent, strlen(get)-sent, 0);
