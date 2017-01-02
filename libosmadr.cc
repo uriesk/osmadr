@@ -17,7 +17,6 @@ std::string printAddressesInCommun(const char* name)
 std::string printBuildingsInCommun(const char* name)
 {
   std::string request = (std::string)OVERPASS_BUILDING_REQUEST;
-  std::cout << request << std::endl;
   return overpassRequest(OVERPASS_HOST, OVERPASS_URL, request);
 }
 
@@ -224,4 +223,71 @@ int Relation::addRole(std::string role)
 {
   roles.push_back(role);
   return 0;
+}
+
+Address::Address(std::string ci, std::string plz, std::string st, std::string hn)
+{
+  city = ci;
+  postcode = plz;
+  street = st;
+  housenumber = hn;
+}
+
+void AddressData::add(std::string ci, std::string plz, std::string st, std::string hn)
+{
+  Address addr(ci, plz, st, hn);
+  addresses.push_back(addr);
+}
+
+AddressData::AddressData(std::string csv_data, const char seperator)
+{
+  unsigned int seperator_positions[5];
+  unsigned int cnt;
+  unsigned int charcnt;
+  charcnt = 0;
+
+  while(true)
+  {
+    seperator_positions[0] = charcnt;
+    cnt = 1;
+    for(; csv_data[charcnt] != '\n' && charcnt < csv_data.length(); charcnt++)
+    {
+      if(csv_data[charcnt] == seperator)
+      {
+        if(cnt < 4)
+          seperator_positions[cnt] = charcnt;
+        cnt++;
+      }
+    }
+    if(cnt == 4)
+    {
+      seperator_positions[cnt] = charcnt;
+      //create Address
+      this->add(csv_data.substr(seperator_positions[0],seperator_positions[1]-seperator_positions[0]),
+                csv_data.substr(seperator_positions[1]+1,seperator_positions[2]-seperator_positions[1]-1),
+                csv_data.substr(seperator_positions[2]+1,seperator_positions[3]-seperator_positions[2]-1),
+                csv_data.substr(seperator_positions[3]+1,seperator_positions[4]-seperator_positions[3]-1));
+      this->print();
+    }
+    else
+      std::cout << "Failure\n";
+    if(charcnt >= csv_data.length()-1)
+      break;
+    charcnt++;
+  }
+}
+
+void AddressData::print()
+{
+  for(std::vector<Address>::iterator iter=addresses.begin(); iter != addresses.end(); iter++)
+    iter->print();
+}
+
+void Address::print()
+{
+  char seperator = ' ';
+  std::cout << city << seperator;
+  std::cout << postcode << seperator;
+  std::cout << street << seperator;
+  std::cout << housenumber << std::endl;
 }

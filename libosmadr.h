@@ -121,6 +121,7 @@ class Address
     Address(std::string, std::string, std::string, std::string);
     long double lat;
     long double lon;
+    void print();
   private:
     std::string city;
     std::string postcode;
@@ -132,7 +133,9 @@ class AddressData
 {
   public:
     std::vector<Address> addresses;
-    AddressData(std::string csv_data);
+    AddressData(std::string csv_data, const char seperator = '|');
+    void add(std::string, std::string, std::string, std::string);
+    void print();
 };
 
 unsigned int loadXMLElement(std::string osm_data, std::vector<OSMObject*>&, unsigned int, unsigned int);
