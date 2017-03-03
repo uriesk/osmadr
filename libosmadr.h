@@ -125,7 +125,7 @@ class Address
     Address(std::string, std::string, std::string, std::string);
     long double lat = 0;
     long double lon = 0;
-    void print();
+    void print(const char* layout = "%p %c %s %n | %h %v");
     friend bool operator==(const Address&, const Address&);
     friend bool operator!=(const Address&, const Address&);
   private:
@@ -142,9 +142,10 @@ class AddressData
     AddressData(std::string csv_data, const char seperator = '|');
     AddressData(){};
     void add(std::string, std::string, std::string, std::string);
-    void print();
+    void print(const char* layout = "%p %c %s %n | %h %v");
     AddressData operator-(const AddressData&) const;
 };
 
 unsigned int loadXMLElement(std::string osm_data, std::vector<OSMObject*>&, unsigned int, unsigned int);
+void printDifferences(AddressData, AddressData);
 

@@ -120,6 +120,19 @@ std::string printBuildingsInCommun(const char* name)
   return overpassRequest(OVERPASS_HOST, OVERPASS_URL, request);
 }
 
+void printDifferences(AddressData adr1, AddressData adr2)
+{
+  AddressData temp;
+  temp = adr1 - adr2;
+  std::cout << "\033[32m";
+  temp.print("++ %p %c %s %n | %h %v");
+  std::cout << "\033[0m";
+  temp = adr2 - adr1;
+  std::cout << "\033[31m";
+  temp.print("-- %p %c %s %n");
+  std::cout << "\033[0m";
+}
+
 OSMData::OSMData(std::string osm_data)
 {
   std::cout << "Construct OSMData" << std::endl;
@@ -381,25 +394,39 @@ AddressData::AddressData(std::string csv_data, const char seperator)
   }
 }
 
-void AddressData::print()
+void AddressData::print(const char* layout)
 {
   for(std::vector<Address>::iterator iter=addresses.begin(); iter != addresses.end(); iter++)
-    iter->print();
+    iter->print(layout);
 }
 
-void Address::print()
+void Address::print(const char* layout)
 {
-  char seperator = ' ';
-  std::cout << city << seperator;
-  std::cout << postcode << seperator;
-  std::cout << street << seperator;
-  std::cout << housenumber;
-  if(lat != 0 && lon != 0)
+  for(int charcnt = 0; layout[charcnt] != '\0'; charcnt++)
   {
-    std::cout << seperator << std::fixed << std::setprecision(2) << lat << seperator;
-    std::cout << std::fixed << std::setprecision(2) << lon << seperator;
+    if(layout[charcnt] == '%')
+    {
+      charcnt++;
+      if(layout[charcnt] == 'p')
+        std::cout << postcode;
+      else if(layout[charcnt] == 's')
+        std::cout << street;
+      else if(layout[charcnt] == 'c')
+        std::cout << city;
+      else if(layout[charcnt] == 'n')
+        std::cout << housenumber;
+      else if(layout[charcnt] == 'h')
+        std::cout << std::fixed << std::setprecision(2) << lat;
+      else if(layout[charcnt] == 'v')
+        std::cout << std::fixed << std::setprecision(2) << lon;
+      else
+        charcnt--;
+    }
+    else
+      std::cout << layout[charcnt];
   }
   std::cout << std::endl;
+  return;
 }
 
 bool operator==(const Address& adr1, const Address& adr2)
