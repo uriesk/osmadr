@@ -41,6 +41,10 @@ out;"
 double mean(double, double);
 std::string printAddressesInCommun(const char* name);
 std::string printBuildingsInCommun(const char* name);
+std::string getIDFromOpenDataCSV(const char* name, const char* csv_file);
+std::string getNameFromOpenDataCSV(const char* id, const char* csv_file, unsigned int pos = 1);
+std::string printElementFromLine(std::string line, unsigned int pos, const char seperator = ';');
+std::string printAddressesInCommunOpendata(const char*, const char*, const char*, const char*);
 
 typedef struct _Tag_
 {
@@ -119,8 +123,8 @@ class Address
 {
   public:
     Address(std::string, std::string, std::string, std::string);
-    long double lat;
-    long double lon;
+    long double lat = 0;
+    long double lon = 0;
     void print();
   private:
     std::string city;

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include "libosmadr.h"
 #include "overpass.h"
@@ -12,6 +13,105 @@ std::string printAddressesInCommun(const char* name)
 {
   std::string request = (std::string)OVERPASS_ADDRESS_REQUEST;
   return overpassRequest(OVERPASS_HOST, OVERPASS_URL, request);
+}
+
+std::string getIDFromOpenDataCSV(const char* name, const char* csv_file)
+{
+  //CSV in the form "ID";..;"Elementname";..
+  std::string line;
+  std::string search_string = (std::string)"\"" + name + "\"";
+  std::ifstream csv(csv_file);
+  if(csv.is_open())
+  {
+    while(getline(csv,line))
+    {
+      if(line.find(search_string) != std::string::npos)
+      {
+        unsigned int length = line.find_first_of('\"',1);
+        if(length == std::string::npos)
+          continue;
+        csv.close();
+        return line.substr(1,length - 1);
+      }
+    }
+    csv.close();
+  }
+  return "";
+}
+
+std::string getNameFromOpenDataCSV(const char* id, const char* csv_file, unsigned int pos)
+{
+  //ID has to be the first Element, Seperator is '\;', Value and ID have to be in quotes
+  std::string line;
+  std::string search_string = (std::string)"\"" + id + "\"";
+  std::ifstream csv(csv_file);
+  if(csv.is_open())
+  {
+    while(getline(csv,line))
+    {
+      if(line.find(search_string) == 0)
+      {
+        csv.close();
+        return printElementFromLine(line, pos, ';');
+      }
+    }
+    csv.close();
+  }
+  return "";
+}
+
+// Prints Element Nr.#pos from csv-line
+std::string printElementFromLine(std::string line, unsigned int pos, const char seperator)
+{
+  unsigned int position_begin = 0;
+  unsigned int position_end = 0;
+  for(unsigned int cnt = 0; cnt < pos; cnt++)
+  {
+    position_begin = line.find_first_of(seperator, position_begin);
+    if(position_begin == std::string::npos)
+      return "";
+    position_begin++;
+  }
+  position_end = line.find_first_of(seperator, position_begin);
+  if(position_end == std::string::npos)
+    return "";
+  if(line[position_begin] == '\"')
+    return line.substr(position_begin + 1, position_end - position_begin - 2);
+  else
+    return line.substr(position_begin, position_end - position_begin);
+}
+
+std::string printAddressesInCommunOpendata(const char* name, const char* gemeinde_csv,
+                                               const char* strasse_csv, const char* addresse_csv)
+{
+  std::string id = getIDFromOpenDataCSV(name, gemeinde_csv);
+  if(id == "")
+    return "";
+
+  std::string return_str = "";
+  std::string line;
+  std::string search_string = (std::string)"\"" + id + "\"";
+  std::ifstream csv(addresse_csv);
+  if(csv.is_open())
+  {
+    while(getline(csv,line))
+    {
+      if(line.find(search_string) != std::string::npos)
+      {
+        std::string street_id = printElementFromLine(line, 4);
+        std::string street_name = getNameFromOpenDataCSV(street_id.c_str(), strasse_csv);
+        return_str.append((std::string)name + '|');
+        return_str.append(printElementFromLine(line, 3) + '|');
+        return_str.append(street_name + '|');
+        return_str.append(printElementFromLine(line, 7));
+        return_str.append(printElementFromLine(line, 8) + '|');
+        return_str.append(printElementFromLine(line, 15) + '|');
+        return_str.append(printElementFromLine(line, 16) + '\n');
+      }
+    }
+    csv.close();
+  }
+  return return_str;
 }
 
 std::string printBuildingsInCommun(const char* name)
@@ -241,7 +341,7 @@ void AddressData::add(std::string ci, std::string plz, std::string st, std::stri
 
 AddressData::AddressData(std::string csv_data, const char seperator)
 {
-  unsigned int seperator_positions[5];
+  unsigned int seperator_positions[7];
   unsigned int cnt;
   unsigned int charcnt;
   charcnt = 0;
@@ -254,12 +354,12 @@ AddressData::AddressData(std::string csv_data, const char seperator)
     {
       if(csv_data[charcnt] == seperator)
       {
-        if(cnt < 4)
+        if(cnt < 6)
           seperator_positions[cnt] = charcnt;
         cnt++;
       }
     }
-    if(cnt == 4)
+    if(cnt >= 4)
     {
       seperator_positions[cnt] = charcnt;
       //create Address
@@ -267,10 +367,14 @@ AddressData::AddressData(std::string csv_data, const char seperator)
                 csv_data.substr(seperator_positions[1]+1,seperator_positions[2]-seperator_positions[1]-1),
                 csv_data.substr(seperator_positions[2]+1,seperator_positions[3]-seperator_positions[2]-1),
                 csv_data.substr(seperator_positions[3]+1,seperator_positions[4]-seperator_positions[3]-1));
-      this->print();
     }
-    else
+    else 
       std::cout << "Failure\n";
+    if(cnt >= 5)
+    {
+      this->addresses.back().lat = ::atof(csv_data.substr(seperator_positions[4]+1,seperator_positions[5]-seperator_positions[4]-1).c_str());
+      this->addresses.back().lon = ::atof(csv_data.substr(seperator_positions[5]+1,seperator_positions[6]-seperator_positions[5]-1).c_str());
+    }
     if(charcnt >= csv_data.length()-1)
       break;
     charcnt++;
@@ -289,5 +393,11 @@ void Address::print()
   std::cout << city << seperator;
   std::cout << postcode << seperator;
   std::cout << street << seperator;
-  std::cout << housenumber << std::endl;
+  std::cout << housenumber;
+  if(lat != 0 && lon != 0)
+  {
+    std::cout << seperator << std::fixed << std::setprecision(2) << lat << seperator;
+    std::cout << std::fixed << std::setprecision(2) << lon << seperator;
+  }
+  std::cout << std::endl;
 }
