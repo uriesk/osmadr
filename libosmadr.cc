@@ -401,3 +401,31 @@ void Address::print()
   }
   std::cout << std::endl;
 }
+
+bool operator==(const Address& adr1, const Address& adr2)
+{
+  return(adr1.city == adr2.city &&
+         adr1.postcode == adr2.postcode &&
+         adr1.street == adr2.street &&
+         adr1.housenumber == adr2.housenumber);
+}
+
+bool operator!=(const Address& adr1, const Address& adr2)
+{
+  return !(adr1 == adr2);
+}
+
+AddressData AddressData::operator-(const AddressData& adr2) const
+{
+  AddressData result;
+  std::vector<Address>::const_iterator iter2;
+  for(std::vector<Address>::const_iterator iter1 = addresses.begin(); iter1 != addresses.end(); iter1++)
+  {
+    for(iter2 = adr2.addresses.begin(); iter2 != adr2.addresses.end(); iter2++)
+      if(*iter1 == *iter2)
+        break;
+    if(iter2 == adr2.addresses.end())
+      result.addresses.push_back(*iter1);
+  }
+  return result;
+}

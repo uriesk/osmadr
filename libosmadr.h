@@ -126,6 +126,8 @@ class Address
     long double lat = 0;
     long double lon = 0;
     void print();
+    friend bool operator==(const Address&, const Address&);
+    friend bool operator!=(const Address&, const Address&);
   private:
     std::string city;
     std::string postcode;
@@ -138,8 +140,10 @@ class AddressData
   public:
     std::vector<Address> addresses;
     AddressData(std::string csv_data, const char seperator = '|');
+    AddressData(){};
     void add(std::string, std::string, std::string, std::string);
     void print();
+    AddressData operator-(const AddressData&) const;
 };
 
 unsigned int loadXMLElement(std::string osm_data, std::vector<OSMObject*>&, unsigned int, unsigned int);
