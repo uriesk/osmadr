@@ -17,7 +17,7 @@ std::string overpassRequest(const char* overpass_host, const char* overpass_url,
   
   sock = create_tcp_socket();
   ip = get_ip(overpass_host);
-  fprintf(stderr, "IP is %s\n", ip); 
+  //fprintf(stderr, "IP is %s\n", ip); 
   remote = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in *));
   remote->sin_family = AF_INET;
   tmpres = inet_pton(AF_INET, ip, (void *)(&(remote->sin_addr.s_addr)));
@@ -37,7 +37,7 @@ std::string overpassRequest(const char* overpass_host, const char* overpass_url,
     exit(1);
   }
   get = build_get_query(overpass_host, overpass_url, overpass_request).c_str();
-  fprintf(stderr, "Query is:\n<<START>>\n%s<<END>>\n", get);
+  //fprintf(stderr, "Query is:\n<<START>>\n%s<<END>>\n", get);
   
   //Send the query to the server
   unsigned int sent = 0;

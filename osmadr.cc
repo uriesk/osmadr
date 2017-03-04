@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
   //std::cout << adsb << std::endl;
   AddressData test2(adsb);
   
-  printDifferences(test2, test1);
+  printDifferences(test2, test1, 1);
   //std::cout << adss << std::endl;
   //std::string buildings = printBuildingsInCommun("Unterweißenbach");
   //std::cout << buildings << std::endl;

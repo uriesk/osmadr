@@ -120,17 +120,32 @@ std::string printBuildingsInCommun(const char* name)
   return overpassRequest(OVERPASS_HOST, OVERPASS_URL, request);
 }
 
-void printDifferences(AddressData adr1, AddressData adr2)
+void printDifferences(AddressData adr1, AddressData adr2, bool mode)
 {
-  AddressData temp;
-  temp = adr1 - adr2;
-  std::cout << "\033[32m";
-  temp.print("++ %p %c %s %n | %h %v");
-  std::cout << "\033[0m";
-  temp = adr2 - adr1;
-  std::cout << "\033[31m";
-  temp.print("-- %p %c %s %n");
-  std::cout << "\033[0m";
+  if(mode == 0)
+  {
+    AddressData temp;
+    temp = adr1 - adr2;
+    std::cout << "\033[32m";
+    temp.print("++ %p %c %s %n | %h %v");
+    std::cout << "\033[0m";
+    temp = adr2 - adr1;
+    std::cout << "\033[31m";
+    temp.print("-- %p %c %s %n");
+    std::cout << "\033[0m";
+  }
+  else
+  {
+    AddressData temp;
+    temp = adr1 % adr2;
+    std::cout << "\033[32m";
+    temp.print("++ %p %c %s %n | %h %v");
+    std::cout << "\033[0m";
+    temp = adr2 % adr1;
+    std::cout << "\033[31m";
+    temp.print("-- %p %c %s %n");
+    std::cout << "\033[0m";
+  }
 }
 
 OSMData::OSMData(std::string osm_data)
@@ -442,6 +457,11 @@ bool operator!=(const Address& adr1, const Address& adr2)
   return !(adr1 == adr2);
 }
 
+bool operator >=(const Address& adr1, const Address& adr2)
+{
+  return(adr1.street == adr2.street && adr1.housenumber == adr2.housenumber);
+}
+
 AddressData AddressData::operator-(const AddressData& adr2) const
 {
   AddressData result;
@@ -450,6 +470,21 @@ AddressData AddressData::operator-(const AddressData& adr2) const
   {
     for(iter2 = adr2.addresses.begin(); iter2 != adr2.addresses.end(); iter2++)
       if(*iter1 == *iter2)
+        break;
+    if(iter2 == adr2.addresses.end())
+      result.addresses.push_back(*iter1);
+  }
+  return result;
+}
+
+AddressData AddressData::operator%(const AddressData& adr2) const
+{
+  AddressData result;
+  std::vector<Address>::const_iterator iter2;
+  for(std::vector<Address>::const_iterator iter1 = addresses.begin(); iter1 != addresses.end(); iter1++)
+  {
+    for(iter2 = adr2.addresses.begin(); iter2 != adr2.addresses.end(); iter2++)
+      if(*iter1 >= *iter2)
         break;
     if(iter2 == adr2.addresses.end())
       result.addresses.push_back(*iter1);

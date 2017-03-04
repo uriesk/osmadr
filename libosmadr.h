@@ -128,6 +128,7 @@ class Address
     void print(const char* layout = "%p %c %s %n | %h %v");
     friend bool operator==(const Address&, const Address&);
     friend bool operator!=(const Address&, const Address&);
+    friend bool operator>=(const Address&, const Address&);
   private:
     std::string city;
     std::string postcode;
@@ -144,8 +145,9 @@ class AddressData
     void add(std::string, std::string, std::string, std::string);
     void print(const char* layout = "%p %c %s %n | %h %v");
     AddressData operator-(const AddressData&) const;
+    AddressData operator%(const AddressData&) const;
 };
 
 unsigned int loadXMLElement(std::string osm_data, std::vector<OSMObject*>&, unsigned int, unsigned int);
-void printDifferences(AddressData, AddressData);
+void printDifferences(AddressData, AddressData, bool mode = 0);
 
