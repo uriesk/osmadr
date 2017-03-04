@@ -94,12 +94,27 @@ std::string printAddressesInCommunOpendata(const char* name, const char* gemeind
   std::ifstream csv(addresse_csv);
   if(csv.is_open())
   {
+    std::vector<Tag> buffer;
     while(getline(csv,line))
     {
       if(line.find(search_string) != std::string::npos)
       {
         std::string street_id = printElementFromLine(line, 4);
-        std::string street_name = getNameFromOpenDataCSV(street_id.c_str(), strasse_csv);
+        std::string street_name;
+        std::vector<Tag>::iterator iter;
+        // Buffer will be checked first, before searching the 
+        // streetname in the csv file
+        for(iter = buffer.begin(); iter != buffer.end(); iter++)
+          if(iter->name.compare(street_id) == 0)
+            break;
+        if(iter == buffer.end())
+        {
+          street_name = getNameFromOpenDataCSV(street_id.c_str(), strasse_csv);
+          Tag bufferitem = {street_id, street_name};
+          buffer.push_back(bufferitem);
+        }
+        else
+          street_name = iter->value;
         return_str.append((std::string)name + '|');
         return_str.append(printElementFromLine(line, 3) + '|');
         return_str.append(street_name + '|');
